@@ -185,3 +185,15 @@ rules:
   - podsecuritypolicies
   verbs:
   - use
+- apiGroups:
+  - kpack.io
+  resources:
+  - builds
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch

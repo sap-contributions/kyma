@@ -88,12 +88,12 @@ func (r *FunctionReconciler) createKpackBuild(ctx context.Context, log logr.Logg
 		},
 		Spec: kpack.BuildSpec{
 			Tags: []string{
-				"registry.ralf.istio.shoot.canary.k8s-hana.ondemand.com/cki-1269-order-service-1:test",
+				fmt.Sprintf("%s/cki-1269-order-service-1:test", dockerConfig.PushAddress),
 			},
 			Builder: kpack.BuildBuilderSpec{
 				Image: "europe-west3-docker.pkg.dev/sap-se-gcp-istio-dev/public/builder:demo",
 			},
-			ServiceAccount: "",
+			ServiceAccount: "serverless-function",
 			Source: kpack.SourceConfig{
 				Git: &kpack.Git{
 					URL:      gitOptions.URL,
