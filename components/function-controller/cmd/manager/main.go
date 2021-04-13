@@ -9,6 +9,7 @@ import (
 
 	"go.uber.org/zap"
 
+	kpack "github.com/pivotal/kpack/pkg/apis/build/v1alpha1"
 	"github.com/vrischmann/envconfig"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -34,6 +35,8 @@ func init() {
 	_ = clientgoscheme.AddToScheme(scheme)
 
 	_ = serverlessv1alpha1.AddToScheme(scheme)
+
+	_ = kpack.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
 }
 

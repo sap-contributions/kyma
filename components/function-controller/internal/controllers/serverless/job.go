@@ -12,6 +12,7 @@ import (
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
 
+	kpack "github.com/pivotal/kpack/pkg/apis/build/v1alpha1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -66,7 +67,7 @@ func (r *FunctionReconciler) changeJob(ctx context.Context, log logr.Logger, ins
 				RequeueAfter: time.Second * 5,
 			}, nil
 		}
-
+		// Maybe should better hook here ...
 		return r.createJob(ctx, log, instance, newJob)
 	case jobsLen > 1 || !r.equalJobs(jobs[0], newJob):
 		return r.deleteJobs(ctx, log, instance)
@@ -77,10 +78,44 @@ func (r *FunctionReconciler) changeJob(ctx context.Context, log logr.Logger, ins
 	}
 }
 
+func (r *FunctionReconciler) createKpackBuild(ctx context.Context, log logr.Logger, instance *serverlessv1alpha1.Function, rtmCfg runtime.Config, jobs []batchv1.Job, gitOptions git.Options, dockerConfig DockerConfig) {
+	log.Info("createKpackBuild")
+
+	build := kpack.Build{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "some-build",
+			Namespace: "cki-1269",
+		},
+		Spec: kpack.BuildSpec{
+			Tags: []string{
+				"registry.ralf.istio.shoot.canary.k8s-hana.ondemand.com/cki-1269-order-service-1:test",
+			},
+			Builder: kpack.BuildBuilderSpec{
+				Image: "europe-west3-docker.pkg.dev/sap-se-gcp-istio-dev/public/builder:demo",
+			},
+			ServiceAccount: "",
+			Source: kpack.SourceConfig{
+				Git: &kpack.Git{
+					URL:      gitOptions.URL,
+					Revision: gitOptions.Reference,
+				},
+			},
+		},
+	}
+
+	err := r.client.Create(ctx, &build)
+	log.Error(err, "error during createKpackBuild")
+}
+
+// Create kpack Build instead of Job
 func (r *FunctionReconciler) onGitJobChange(ctx context.Context, log logr.Logger, instance *serverlessv1alpha1.Function, rtmCfg runtime.Config, jobs []batchv1.Job, gitOptions git.Options, dockerConfig DockerConfig) (ctrl.Result, error) {
+	r.createKpackBuild(ctx, log, instance, rtmCfg, jobs, gitOptions, dockerConfig)
+
 	newJob := r.buildGitJob(instance, gitOptions, rtmCfg, dockerConfig)
 	return r.changeJob(ctx, log, instance, newJob, jobs)
 }
+
+// Create kpack Build instead of Job
 func (r *FunctionReconciler) onJobChange(ctx context.Context, log logr.Logger, instance *serverlessv1alpha1.Function, rtmCfg runtime.Config, configMapName string, jobs []batchv1.Job, dockerConfig DockerConfig) (ctrl.Result, error) {
 	newJob := r.buildJob(instance, rtmCfg, configMapName, dockerConfig)
 	return r.changeJob(ctx, log, instance, newJob, jobs)

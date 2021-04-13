@@ -26,4 +26,5 @@ require (
 	k8s.io/utils v0.0.0-20200619165400-6e3d28b6ed19 // indirect
 	knative.dev/pkg v0.0.0-20201026165741-2f75016c1368
 	sigs.k8s.io/controller-runtime v0.6.5
+	github.com/pivotal/kpack v0.2.2
 )
