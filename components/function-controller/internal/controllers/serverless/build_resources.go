@@ -320,7 +320,8 @@ func (r *FunctionReconciler) buildGitJob(instance *serverlessv1alpha1.Function, 
 }
 
 func (r *FunctionReconciler) buildDeployment(instance *serverlessv1alpha1.Function, rtmConfig runtime.Config, dockerConfig DockerConfig) appsv1.Deployment {
-	imageName := r.buildImageAddress(instance, dockerConfig.PullAddress)
+	// imageName := r.buildImageAddress(instance, dockerConfig.PullAddress)
+	imageName := fmt.Sprintf("%s/%s:%s", dockerConfig.PullAddress, instance.GetName(), "kpack")
 	deploymentLabels := r.functionLabels(instance)
 	podLabels := r.podLabels(instance)
 
