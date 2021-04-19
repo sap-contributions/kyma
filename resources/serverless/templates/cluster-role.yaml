@@ -158,6 +158,7 @@ rules:
   verbs:
   - get
   - list
+  - delete
   - watch
 - apiGroups:
   - serverless.kyma-project.io
